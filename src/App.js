@@ -101,6 +101,7 @@ function App() {
 
   React.useEffect(() => {
     checkIfWalletIsConnected();
+    //eslint-disable-next-line
   }, []);
 
   const handleSubmit = (event) => {
