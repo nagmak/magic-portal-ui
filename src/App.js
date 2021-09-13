@@ -1,23 +1,25 @@
-import logo from './logo.svg';
 import './App.css';
 
 function App() {
+  const castSpell = () => {
+
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="mainContainer">
+      <div className="dataContainer">
+        <div className="header">
+        🧙 Welcome fellow Mages!
+        </div>
+
+        <div className="spell-cast">
+        I am Nagma, let's test our magic today. Connect your Ethereum wallet and cast a spell!
+        </div>
+
+        <button className="spellButton" onClick={castSpell}>
+        ✨Cast a Spell✨
+        </button>
+      </div>
     </div>
   );
 }
