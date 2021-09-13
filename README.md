@@ -1,5 +1,5 @@
 # Getting Started with Magic Portal UI
-![Image of Magic Portal UI](./mages.png)
+![Image of Magic Portal UI](./public/mages.png)
 
 [The site is online!](https://adoring-pasteur-250947.netlify.app/ "Magic Portal")
 
