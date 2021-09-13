@@ -1,4 +1,7 @@
 # Getting Started with Magic Portal UI
+![Image of Magic Portal UI](./mages.png)
+
+[The site is online!](https://adoring-pasteur-250947.netlify.app/ "Magic Portal")
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
