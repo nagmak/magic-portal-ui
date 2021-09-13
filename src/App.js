@@ -101,7 +101,7 @@ function App() {
 
   React.useEffect(() => {
     checkIfWalletIsConnected();
-  });
+  }, []);
 
   const handleSubmit = (event) => {
     event.preventDefault();
