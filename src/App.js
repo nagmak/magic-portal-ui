@@ -2,6 +2,13 @@ import './App.css';
 import { ethers } from "ethers";
 import * as React from 'react';
 import abi from "./utils/CastSpellPortal.json";
+import timeSince from './utils/appUtils';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { fab } from '@fortawesome/free-brands-svg-icons';
+import { fas } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
+library.add(fab, fas);
 
 function App() {
   const [currAccount, setCurrAccount] = React.useState("");
@@ -9,8 +16,12 @@ function App() {
   const [isFormVisible, setIsFormVisible] = React.useState(false);
   const [spellName, setSpellName] = React.useState("");
   const [allSpellsCast, setAllSpellsCast] = React.useState([]);
+  const [isPrizeWon, setIsPrizeWon] = React.useState(false);
   const [spellMsg, setSpellMsg] = React.useState("");
-  const contractAddress = "0x2605dbFf4F9ebA870009B356D34fd836eEd88697";
+  const [spellCount, setSpellCount] = React.useState(0);
+  const [winnerCount, setWinnerCount] = React.useState(0);
+  const [prizeAmount, setPrizeAmount] = React.useState(0);
+  const contractAddress = "0xB23FF2c04D6503Ee3829f2e45bBeC5c0F3a38562";
   const contractABI = abi.abi;
 
   const checkIfWalletIsConnected = () => {
@@ -62,7 +73,7 @@ function App() {
     console.log("Mining...", spellTxn.hash);
     await spellTxn.wait();
     console.log("Mined -- ", spellTxn.hash);
-
+    console.log(spellTxn);
     count = await spellPortalContract.getTotalSpells();
     console.log("All the spells are counted...", count.toNumber());
     setIsSpellCasted(true);
@@ -77,25 +88,34 @@ function App() {
     const spellPortalContract = new ethers.Contract(contractAddress, contractABI, signer);
 
     let spellsCast = await spellPortalContract.getAllSpellsCast();
-
+    console.log(spellsCast);
     let spellsCleaned = [];
     spellsCast.forEach(spellCast => {
       let timestamp = spellCast.timestamp.toNumber();
       spellsCleaned.push({
         address: spellCast.spellCaster,
-        timestamp: new Date(timestamp*1000),
+        timestamp: timeSince(new Date(timestamp*1000)),
         message: spellCast.message
       })
     });
  
-    setAllSpellsCast(spellsCleaned);
+    setAllSpellsCast(spellsCleaned); // posts for each spell cast
+    setSpellCount(spellsCleaned.length); // total number of spells cast so far
+
     spellPortalContract.on("NewSpellCast", (from, timestamp, message) => {
       console.log("New Spell Cast!", from, timestamp, message);
       setAllSpellsCast(oldArray => [...oldArray, {
         address: from,
-        timestamp: new Date(timestamp*1000),
+        timestamp: timeSince(new Date(timestamp*1000)),
         message: message
       }])
+    });
+
+    spellPortalContract.on("PrizeWinner", (from, prizeAmount) => {
+      console.log("Someone won a prize!", from, prizeAmount);
+      setIsPrizeWon(true);
+      setWinnerCount(prevCount => prevCount + 1);
+      setPrizeAmount(prizeAmount)
     });
   }
 
@@ -119,28 +139,41 @@ function App() {
     <div className="mainContainer">
       <div className="dataContainer">
         <div className="header">
-        🧙 Welcome fellow Mages!
+        🧙🏽 Magic Mage Portal ✨
         </div>
-
         {isSpellCasted && spellName && spellName !== ""? ( <div className="spell-cast">
           The spell you cast is... {spellName}!
         </div>):  <div className="spell-cast">
-        I am Nagma, let's test our magic today. Connect your Ethereum wallet and cast a spell!
+        I'm Nagma, let's test our magic today.
+        <p>Connect your Ethereum wallet and cast a spell!</p>
         </div>
         }
+        <div className="leaderboard-info">
+          <p>The ancient gods have granted you luck - a 50% chance for you to win a prize.</p>
+          <p>Spells casted so far: {spellCount}</p>
+          <p>Winners: {winnerCount}</p>
+        </div>
 
         <button className="spellButton" onClick={userMessage}>
-        ✨Cast a Spell✨
+        Cast a Spell
         </button>
 
         {isFormVisible ? (
-          <form onSubmit={handleSubmit} style={{marginTop: "16px", padding: "8px"}}>
-          <label style={{ color: "gray"}}>
-            Oh, do you have something to say? The spell is about to be cast!
-            <input type="text" placeholder="Hmmm..." value={spellMsg} onChange={ e => setSpellMsg(e.target.value)} style={{marginTop: "16px", padding: "8px", border: 0, borderRadius: "5px", minWidth: "300px"}}/>
+          <form className="spell-form" onSubmit={handleSubmit}>
+          <label>
+            Oh, you want to cast your own spell? Be my guest! If not, I'll pick one for you.
+            <input className="spell-textArea" type="text" placeholder="Hmmm..." value={spellMsg} onChange={ e => {
+                if (e.target.value !== "") {
+                  setSpellMsg(e.target.value);
+                }
+              }}/>
           </label>
-          <input type="submit" value="Submit" style={{marginTop: "16px", marginLeft: "8px", padding: "8px", border: 0, borderRadius: "5px", cursor: "pointer"}}/>
+          <input className="spell-submitBtn" type="submit" value="Submit"/>
         </form>
+        ): null}
+
+        {isPrizeWon ? (
+          <div>Omg. You won some magic money valued at {prizeAmount}!</div>
         ): null}
 
         {currAccount ? null: (
@@ -151,14 +184,33 @@ function App() {
 
         {allSpellsCast.map((spellCast, index) => {
           return (
-            <div style={{backgroundColor: "OldLace", marginTop: "16px", padding: "8px"}}>
-              <div>Address: {spellCast.address}</div>
-              <div>Time: {spellCast.timestamp.toString()}</div>
-              <div>Message: {spellCast.message}</div>
+            <div className="spell-posts">
+              <div>Incantation: {spellCast.message}</div>
+              <div>Wand wielder: {spellCast.address}</div>
+              <div>{spellCast.timestamp.toString()}</div>
             </div>
           )
         })}
       </div>
+      <footer className="bottom-footer">
+        <section className="contact">
+        <a className="font-brand" href="https://www.instagram.com/notnagma/">
+            <FontAwesomeIcon size="2x" icon={['fab', 'instagram']} />
+          </a>
+          <a className="font-brand" href="https://twitter.com/notnagma">
+            <FontAwesomeIcon size="2x" icon={['fab', 'twitter']} />
+          </a>
+          <a className="font-brand" href="https://www.linkedin.com/in/nagmakapoor/">
+            <FontAwesomeIcon size="2x" icon={['fab', 'linkedin']} />
+          </a>
+          <a className="font-brand" href="mailto:nagmakapoor@gmail.com">
+            <FontAwesomeIcon size="2x" icon={['fas', 'envelope']} />
+          </a>
+        </section>
+        <section className="copyright-footer">
+          <div className="copyright-footer-item">© 2021 Nagma Kapoor</div>
+        </section>
+      </footer>
     </div>
   );
 }
