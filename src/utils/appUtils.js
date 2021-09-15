@@ -27,7 +27,7 @@ var timeSince = function(date) {
               intervalType = "min";
             } else {
               interval = seconds;
-              intervalType = "s";
+              intervalType = "sec";
             }
           }
         }

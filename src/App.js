@@ -21,7 +21,8 @@ function App() {
   const [spellCount, setSpellCount] = React.useState(0);
   const [winnerCount, setWinnerCount] = React.useState(0);
   const [prizeAmount, setPrizeAmount] = React.useState(0);
-  const contractAddress = "0xB23FF2c04D6503Ee3829f2e45bBeC5c0F3a38562";
+  const [walletMessage, setWalletMessage] = React.useState("Connect your Ethereum wallet and cast a spell!");
+  const contractAddress = "0x7b4c5EA21A9a44037697D5a57b74f805dC7A2d2e";
   const contractABI = abi.abi;
 
   const checkIfWalletIsConnected = () => {
@@ -32,6 +33,7 @@ function App() {
       return
     } else {
       console.log("Your magical ethereum object has been found", ethereum);
+      setWalletMessage("Your wallet is connected. You may now cast a spell!");
     }
 
     ethereum.request({ method: 'eth_accounts' })
@@ -41,6 +43,7 @@ function App() {
           console.log("Found an authorized account: ", account);
           setCurrAccount(account);
           getAllSpellsCast();
+          setIsFormVisible(true);
         } else {
           console.log("No authorized account found!");
         }
@@ -88,17 +91,21 @@ function App() {
     const spellPortalContract = new ethers.Contract(contractAddress, contractABI, signer);
 
     let spellsCast = await spellPortalContract.getAllSpellsCast();
+    let winnerCount = await spellPortalContract.getWinnerCount();
+
     console.log(spellsCast);
     let spellsCleaned = [];
-    spellsCast.forEach(spellCast => {
-      let timestamp = spellCast.timestamp.toNumber();
-      spellsCleaned.push({
-        address: spellCast.spellCaster,
-        timestamp: timeSince(new Date(timestamp*1000)),
-        message: spellCast.message
-      })
-    });
- 
+    if (spellsCast) {
+      spellsCast.forEach(spellCast => {
+        let timestamp = spellCast.timestamp.toNumber();
+        spellsCleaned.push({
+          address: spellCast.spellCaster,
+          timestamp: timeSince(new Date(timestamp*1000)),
+          message: spellCast.message
+        })
+      });
+
+    setWinnerCount(winnerCount.toNumber());
     setAllSpellsCast(spellsCleaned); // posts for each spell cast
     setSpellCount(spellsCleaned.length); // total number of spells cast so far
 
@@ -115,8 +122,9 @@ function App() {
       console.log("Someone won a prize!", from, prizeAmount);
       setIsPrizeWon(true);
       setWinnerCount(prevCount => prevCount + 1);
-      setPrizeAmount(prizeAmount)
+      setPrizeAmount(prizeAmount.toNumber()/(10**18));
     });
+  }
   }
 
   React.useEffect(() => {
@@ -131,56 +139,47 @@ function App() {
     spell();
   }
 
-  const userMessage = () => {
-    setIsFormVisible(true);
-  }
-
   return (
     <div className="mainContainer">
       <div className="dataContainer">
         <div className="header">
-        🧙🏽 Magic Mage Portal ✨
-        </div>
-        {isSpellCasted && spellName && spellName !== ""? ( <div className="spell-cast">
-          The spell you cast is... {spellName}!
-        </div>):  <div className="spell-cast">
-        I'm Nagma, let's test our magic today.
-        <p>Connect your Ethereum wallet and cast a spell!</p>
-        </div>
-        }
-        <div className="leaderboard-info">
-          <p>The ancient gods have granted you luck - a 50% chance for you to win a prize.</p>
-          <p>Spells casted so far: {spellCount}</p>
-          <p>Winners: {winnerCount}</p>
-        </div>
-
-        <button className="spellButton" onClick={userMessage}>
-        Cast a Spell
-        </button>
-
-        {isFormVisible ? (
-          <form className="spell-form" onSubmit={handleSubmit}>
-          <label>
-            Oh, you want to cast your own spell? Be my guest! If not, I'll pick one for you.
-            <input className="spell-textArea" type="text" placeholder="Hmmm..." value={spellMsg} onChange={ e => {
-                if (e.target.value !== "") {
-                  setSpellMsg(e.target.value);
-                }
-              }}/>
-          </label>
-          <input className="spell-submitBtn" type="submit" value="Submit"/>
-        </form>
-        ): null}
-
-        {isPrizeWon ? (
-          <div>Omg. You won some magic money valued at {prizeAmount}!</div>
-        ): null}
+        <img src="littlewitch.svg" alt="Little Witch" style={{width: "138px"}}></img>
 
         {currAccount ? null: (
           <button className="spellButton" onClick={connectWallet}>
           Connect Wallet
           </button>
         )}
+        <h2 className="header-name">Spread a little magic</h2>
+        </div>
+        {isSpellCasted && spellName && spellName !== ""? ( <div className="spell-cast">
+          The spell you cast is... {spellName}!
+        </div>):  <div className="spell-cast">
+        I'm Nagma, let's test our magic today.
+        <p>{walletMessage}</p>
+        </div>
+        }
+        <div className="leaderboard-info">
+          <p>You're quite a lucky one - a 50% chance for you to win a prize.</p>
+          <p>Spells casted so far: {spellCount}</p>
+          <p>Winners: {winnerCount}</p>
+        </div>
+      
+        {isFormVisible ? (
+          <form className="spell-form" onSubmit={handleSubmit}>
+            <div className="spell-form-msg">Oh, you want to cast your own spell? Be my guest! If not, I'll pick one for you.</div>
+            <input className="spell-textArea" type="text" placeholder="Hmmm..." value={spellMsg} onChange={ e => {
+                if (e.target.value !== "") {
+                  setSpellMsg(e.target.value);
+                }
+              }}/>
+          <input className="spell-submitBtn" type="submit" value="Cast a spell"/>
+        </form>
+        ): null}
+
+        {isPrizeWon ? (
+          <div className="winner-msg">Omg. You won some magic money valued at {prizeAmount} ETH!</div>
+        ): null}
 
         {allSpellsCast.map((spellCast, index) => {
           return (
