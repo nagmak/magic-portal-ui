@@ -49,8 +49,8 @@ function App() {
           setCurrAccount(account);
           getAllSpellsCast();
           setIsFormVisible(true);
-          if (currAccount) {
-            web3.eth.getBalance(currAccount).then(e => setCurrBalance(e/10**18));
+          if (account) {
+            web3.eth.getBalance(account).then(e => setCurrBalance(e/10**18));
           }
         } else {
           setIsFormVisible(false);
@@ -71,8 +71,8 @@ function App() {
       .then(accounts => {
         console.log("Connected to: ", accounts[0]);
         setCurrAccount(accounts[0]);
-        if (currAccount) {
-          web3.eth.getBalance(currAccount).then(e => setCurrBalance(e/10**18));
+        if (accounts[0]) {
+          web3.eth.getBalance(accounts[0]).then(e => setCurrBalance(e/10**18));
         }
       })
       .catch(err => console.log(err));
