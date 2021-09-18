@@ -246,6 +246,9 @@ function App() {
           <a className="font-brand" href="mailto:nagmakapoor@gmail.com">
             <FontAwesomeIcon size="2x" icon={['fas', 'envelope']} />
           </a>
+          <a className="font-brand" href="https://github.com/nagmak/magic-portal-eth">
+            <FontAwesomeIcon size="2x" icon={['fab', 'github']} />
+          </a>
         </section>
         <section className="copyright-footer">
           <div className="copyright-footer-item">© 2021 Nagma Kapoor</div>
