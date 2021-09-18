@@ -8,6 +8,7 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 import { fab } from '@fortawesome/free-brands-svg-icons';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { CircularProgress } from "@chakra-ui/react"
 
 library.add(fab, fas);
 
@@ -16,6 +17,7 @@ function App() {
   const [currBalance, setCurrBalance] = React.useState(0);
   const [isSpellCasted, setIsSpellCasted] = React.useState(false);
   const [isFormVisible, setIsFormVisible] = React.useState(false);
+  const [isSubmitted, setIsSubmitted] = React.useState(false);
   const [spellName, setSpellName] = React.useState("");
   const [allSpellsCast, setAllSpellsCast] = React.useState([]);
   const [isPrizeWon, setIsPrizeWon] = React.useState(false);
@@ -96,6 +98,7 @@ function App() {
 
     const spellName = await spellPortalContract.getSpellName();
     setSpellName(spellName);
+    setIsSubmitted(false);
   }
 
   async function getAllSpellsCast() {
@@ -150,7 +153,9 @@ function App() {
   const handleSubmit = (event) => {
     event.preventDefault();
     console.log(spellMsg);
+    setIsSubmitted(true);
     spell();
+    setSpellMsg("");
   }
 
   return (
@@ -200,7 +205,7 @@ function App() {
                   setSpellMsg(e.target.value);
                 }
               }}/>
-          <input className="spell-submitBtn" type="submit" value="Cast a spell"/>
+          <button className="spell-submitBtn" type="submit">Cast a spell {isSubmitted ? <CircularProgress size="22px" thickness="4px" isIndeterminate color="#3C2E26" /> : null}</button>
         </form>
         ): null}
 
