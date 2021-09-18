@@ -161,11 +161,12 @@ function App() {
   return (
     <div className="mainContainer">
       <div className="dataContainer">
-        <div className="header">
+        <div className="header">{
+          currAccount ? 
           <div className="wallet-info">
             <div className="wallet-name">{truncateMiddle(currAccount)}</div>
             <div className="wallet-amount">{truncateAmount(currBalance)} eth</div>
-          </div>
+          </div> : null}
 
         <img src="littlewitch.svg" alt="Little Witch" style={{width: "138px"}}></img>
         <div className="leaderboard">
