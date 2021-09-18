@@ -45,3 +45,12 @@ var timeSince = function(date) {
   console.log(timeSince(new Date(Date.now() - aDay * 2)));
 
   export default timeSince;
+
+  export var truncateMiddle = function(str) {
+    return str.length > 6 ? str.substr(0, 6) + '...' + str.substr(-4): str;
+  }
+
+  export var truncateAmount = function(val) {
+    let str = val.toString();
+    return str.length > 6 ? str.substr(0, 6): str;
+  }

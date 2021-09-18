@@ -1,8 +1,9 @@
 import './App.css';
 import { ethers } from "ethers";
+import Web3 from 'web3';
 import * as React from 'react';
 import abi from "./utils/CastSpellPortal.json";
-import timeSince from './utils/appUtils';
+import timeSince, { truncateMiddle, truncateAmount } from './utils/appUtils';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fab } from '@fortawesome/free-brands-svg-icons';
 import { fas } from '@fortawesome/free-solid-svg-icons';
@@ -12,6 +13,7 @@ library.add(fab, fas);
 
 function App() {
   const [currAccount, setCurrAccount] = React.useState("");
+  const [currBalance, setCurrBalance] = React.useState(0);
   const [isSpellCasted, setIsSpellCasted] = React.useState(false);
   const [isFormVisible, setIsFormVisible] = React.useState(false);
   const [spellName, setSpellName] = React.useState("");
@@ -22,11 +24,12 @@ function App() {
   const [winnerCount, setWinnerCount] = React.useState(0);
   const [prizeAmount, setPrizeAmount] = React.useState(0);
   const [walletMessage, setWalletMessage] = React.useState("Connect your Ethereum wallet and cast a spell!");
-  const contractAddress = "0x7b4c5EA21A9a44037697D5a57b74f805dC7A2d2e";
+  const contractAddress = "0x1D79975F067C805D74E497bAC5251c08d60dB407";
   const contractABI = abi.abi;
 
   const checkIfWalletIsConnected = () => {
     const { ethereum } = window;
+    const web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
 
     if (!ethereum) {
       console.log("Connect your ethereum wallet!");
@@ -44,7 +47,11 @@ function App() {
           setCurrAccount(account);
           getAllSpellsCast();
           setIsFormVisible(true);
+          if (currAccount) {
+            web3.eth.getBalance(currAccount).then(e => setCurrBalance(e/10**18));
+          }
         } else {
+          setIsFormVisible(false);
           console.log("No authorized account found!");
         }
       })
@@ -52,6 +59,8 @@ function App() {
 
   const connectWallet = () => {
     const { ethereum } = window;
+    const web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
+
     if (!ethereum) {
       alert("Please get an ethereum wallet!");
     }
@@ -60,6 +69,9 @@ function App() {
       .then(accounts => {
         console.log("Connected to: ", accounts[0]);
         setCurrAccount(accounts[0]);
+        if (currAccount) {
+          web3.eth.getBalance(currAccount).then(e => setCurrBalance(e/10**18));
+        }
       })
       .catch(err => console.log(err));
   }
@@ -73,6 +85,7 @@ function App() {
     console.log("All the spells are counted...", count.toNumber());
 
     const spellTxn = await spellPortalContract.getSpell(signer.getAddress(), spellMsg, {gasLimit: 300000});
+
     console.log("Mining...", spellTxn.hash);
     await spellTxn.wait();
     console.log("Mined -- ", spellTxn.hash);
@@ -101,7 +114,8 @@ function App() {
         spellsCleaned.push({
           address: spellCast.spellCaster,
           timestamp: timeSince(new Date(timestamp*1000)),
-          message: spellCast.message
+          message: spellCast.message,
+          isWinner: spellCast.isWinner,
         })
       });
 
@@ -109,12 +123,13 @@ function App() {
     setAllSpellsCast(spellsCleaned); // posts for each spell cast
     setSpellCount(spellsCleaned.length); // total number of spells cast so far
 
-    spellPortalContract.on("NewSpellCast", (from, timestamp, message) => {
-      console.log("New Spell Cast!", from, timestamp, message);
+    spellPortalContract.on("NewSpellCast", (from, timestamp, message, isWinner) => {
+      console.log("New Spell Cast!", from, timestamp, message, isWinner);
       setAllSpellsCast(oldArray => [...oldArray, {
         address: from,
         timestamp: timeSince(new Date(timestamp*1000)),
-        message: message
+        message: message,
+        isWinner: isWinner,
       }])
     });
 
@@ -134,7 +149,6 @@ function App() {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    setIsFormVisible(!isFormVisible);
     console.log(spellMsg);
     spell();
   }
@@ -143,8 +157,23 @@ function App() {
     <div className="mainContainer">
       <div className="dataContainer">
         <div className="header">
-        <img src="littlewitch.svg" alt="Little Witch" style={{width: "138px"}}></img>
+          <div className="wallet-info">
+            <div className="wallet-name">{truncateMiddle(currAccount)}</div>
+            <div className="wallet-amount">{truncateAmount(currBalance)} eth</div>
+          </div>
 
+        <img src="littlewitch.svg" alt="Little Witch" style={{width: "138px"}}></img>
+        <div className="leaderboard">
+          <div className="leaderboard-text">
+            <p className="spells-cast-text">Spells cast</p>
+            <p className="winners-text">Winners</p>
+          </div>
+          <div className="leaderboard-num">
+            <p className="spells-cast-num">{spellCount}</p>
+            <p className="winners-num">{winnerCount}</p>
+          </div>
+        </div>
+        
         {currAccount ? null: (
           <button className="spellButton" onClick={connectWallet}>
           Connect Wallet
@@ -161,8 +190,6 @@ function App() {
         }
         <div className="leaderboard-info">
           <p>You're quite a lucky one - a 50% chance for you to win a prize.</p>
-          <p>Spells casted so far: {spellCount}</p>
-          <p>Winners: {winnerCount}</p>
         </div>
       
         {isFormVisible ? (
@@ -184,9 +211,15 @@ function App() {
         {allSpellsCast.map((spellCast, index) => {
           return (
             <div className="spell-posts">
-              <div>Incantation: {spellCast.message}</div>
-              <div>Wand wielder: {spellCast.address}</div>
-              <div>{spellCast.timestamp.toString()}</div>
+               <div className="posts-left">
+               {spellCast.isWinner ? <img src="winner-hat.svg" alt="Winner hat" style={{width: "58px", marginTop: "8px"}}></img> : <img src="user-hat.svg" alt="User hat" style={{width: "58px", marginTop: "8px"}}></img>}
+                {spellCast.isWinner ? (<div className="is-winner">won!</div>) : null}
+               </div>
+              <div className="incantation">{spellCast.message}</div>
+              <div className="posts-right">
+                <div className="wand-wielder">{truncateMiddle(spellCast.address)}</div>
+                <div className="time-ago">{spellCast.timestamp.toString()}</div>
+              </div>
             </div>
           )
         })}

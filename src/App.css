@@ -37,6 +37,84 @@
   margin-bottom: 16px;
 }
 
+.wallet-name {
+  background: #c1c6ff;
+  display: inline-flex;
+  border-radius: 32px;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 4px;
+  padding-top: 4px;
+  font-size: 12px;
+}
+
+.wallet-amount {
+  background: #38251B;
+  color: #FBF6F3;
+  display: inline-flex;
+  border-radius: 32px;
+  padding-left: 16px;
+  padding-right: 12px;
+  padding-bottom: 4px;
+  padding-top: 4px;
+  font-size: 12px;
+  width: 64px;
+}
+
+.wallet-info {
+  background: #c1c6ff;
+  border-radius: 32px;
+  display: flex;
+  flex-direction: row;
+  padding-bottom: 1px;
+  width: 200px;
+  padding-top: 1px;
+  align-self: center;
+  margin-bottom: 16px;
+}
+
+.leaderboard {
+  display: flex;
+  flex-direction: row;
+  align-self: center;
+}
+
+.spells-cast-text {
+  border-color: #c1c6ff;
+  border-width: 1px;
+  border-radius: 32px;
+  border-style: solid;
+  padding: 8px;
+  font-size: 16px;
+}
+
+.winners-text {
+  border-color: #c1c6ff;
+  border-width: 1px;
+  border-radius: 32px;
+  border-style: solid;
+  padding: 8px;
+  font-size: 16px;
+}
+
+.spells-cast-num {
+  padding: 10px;
+  padding-left: 14px;
+  padding-right: 14px;
+  font-size: 16px;
+  background: #c1c6ff;
+  border-radius: 32px;
+}
+
+.winners-num {
+  padding: 10px;
+  padding-left: 14px;
+  padding-right: 14px;
+  font-size: 16px;
+  background: #c1c6ff;
+  border-radius: 32px;
+}
+
 .spell-cast {
   text-align: center;
   margin-top: 16px;
@@ -72,12 +150,36 @@
 }
 
 .spell-posts {
-  background-color: #586F7C;
+  background-color: #8D7B6A;
   color: #FBF6F3;
   margin-top: 16px;
   padding: 12px;
   border-radius: 5px;
   padding-left: 20px;
+  display: flex;
+  flex-direction: row;
+}
+
+.incantation {
+  margin-top: 30px;
+  margin-left: 24px;
+  width: 100%;
+}
+
+.posts-right {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  margin-top: 4px;
+}
+
+.posts-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.time-ago {
+  margin-top: 48px;
 }
 
 .spell-form {
@@ -90,7 +192,7 @@
   cursor: pointer;
   margin-top: 16px;
   padding: 16px;
-  border-radius: 5px;
+  border-radius: 32px;
   background: #FBF6F3;
   font-family: inherit;
   color: #3C2E26;
@@ -108,11 +210,15 @@
   margin-top: 16px;
   padding-bottom: 16px;
   padding-top: 16px;
-  padding-left: 8px;
-  padding-right: 8px;
-  border: 0;
-  border-radius: 5px;
-  width: 584px;
+  padding-left: 16px;
+  padding-right: 16px;
+  border: 32px;
+  border-radius: 32px;
+  width: 570px;
+}
+
+.spell-textArea:focus{
+  outline: none;
 }
 
 .bottom-footer {
