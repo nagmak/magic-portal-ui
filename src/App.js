@@ -66,7 +66,7 @@ function App() {
     if (!ethereum) {
       alert("Please get an ethereum wallet!");
     }
-
+    setIsSubmitted(true);
     ethereum.request({ method: 'eth_requestAccounts' })
       .then(accounts => {
         console.log("Connected to: ", accounts[0]);
@@ -74,6 +74,8 @@ function App() {
         if (accounts[0]) {
           web3.eth.getBalance(accounts[0]).then(e => setCurrBalance(e/10**18));
         }
+        setIsSubmitted(false);
+        setIsFormVisible(true);
       })
       .catch(err => console.log(err));
   }
@@ -182,7 +184,7 @@ function App() {
         
         {currAccount ? null: (
           <button className="spellButton" onClick={connectWallet}>
-          Connect Wallet
+          Connect Wallet {isSubmitted ? <CircularProgress size="22px" thickness="4px" isIndeterminate color="#3C2E26" /> : null}
           </button>
         )}
         <h2 className="header-name">Spread a little magic</h2>
@@ -201,7 +203,7 @@ function App() {
         {isFormVisible ? (
           <form className="spell-form" onSubmit={handleSubmit}>
             <div className="spell-form-msg">Oh, you want to cast your own spell? Be my guest! If not, I'll pick one for you.</div>
-            <input className="spell-textArea" type="text" placeholder="Hmmm..." value={spellMsg} onChange={ e => {
+            <input className="spell-textArea" maxLength="280" type="text" placeholder="Hmmm..." value={spellMsg} onChange={ e => {
                 if (e.target.value !== "") {
                   setSpellMsg(e.target.value);
                 }
