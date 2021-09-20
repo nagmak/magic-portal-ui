@@ -9,6 +9,9 @@ import { fab } from '@fortawesome/free-brands-svg-icons';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { CircularProgress } from "@chakra-ui/react"
+import WalletConnectProvider from "@walletconnect/web3-provider";
+import WalletsModal from './WalletsModal/WalletsModal';
+import { useDisclosure } from "@chakra-ui/react"
 
 library.add(fab, fas);
 
@@ -28,10 +31,28 @@ function App() {
   const [walletMessage, setWalletMessage] = React.useState("Connect your Ethereum wallet and cast a spell!");
   const contractAddress = "0x1D79975F067C805D74E497bAC5251c08d60dB407";
   const contractABI = abi.abi;
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  
+    //  Create WalletConnect Provider
+  const provider = new WalletConnectProvider({
+      rpc: {
+        1: "https://eth-rinkeby.alchemyapi.io/v2/vEWURu0OwIpyaF2-v6ANM9mmJ21JBRZX",
+      },
+      qrcodeModalOptions: {
+        mobileLinks: [
+          "rainbow",
+          "metamask",
+          "argent",
+          "trust",
+          "imtoken",
+          "pillar",
+        ],
+      },
+    });
 
   const checkIfWalletIsConnected = () => {
     const { ethereum } = window;
-    const web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
+    const web3 = new Web3(provider);
 
     if (!ethereum) {
       console.log("Connect your ethereum wallet!");
@@ -61,23 +82,31 @@ function App() {
 
   const connectWallet = () => {
     const { ethereum } = window;
-    const web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
+    const web3 = new Web3(provider);
 
     if (!ethereum) {
       alert("Please get an ethereum wallet!");
     }
     setIsSubmitted(true);
-    ethereum.request({ method: 'eth_requestAccounts' })
-      .then(accounts => {
-        console.log("Connected to: ", accounts[0]);
-        setCurrAccount(accounts[0]);
-        if (accounts[0]) {
-          web3.eth.getBalance(accounts[0]).then(e => setCurrBalance(e/10**18));
-        }
-        setIsSubmitted(false);
-        setIsFormVisible(true);
-      })
-      .catch(err => console.log(err));
+      ethereum.request({ method: 'eth_requestAccounts' })
+        .then(accounts => {
+          console.log("Connected to: ", accounts[0]);
+          setCurrAccount(accounts[0]);
+          if (accounts[0]) {
+            web3.eth.getBalance(accounts[0]).then(e => setCurrBalance(e/10**18));
+          }
+          setIsSubmitted(false);
+          setIsFormVisible(true);
+        })
+        .catch(err => console.log(err));
+}
+  const handleMetamask = () => {
+    connectWallet();
+  }
+
+  const handleWalletConnect = async() => {
+      //  Enable session (triggers QR Code modal)
+      await provider.enable().catch(err => console.log(err));
   }
 
   const spell = async () => {
@@ -183,9 +212,12 @@ function App() {
         </div>
         
         {currAccount ? null: (
-          <button className="spellButton" onClick={connectWallet}>
+          <div>
+          <button className="spellButton" onClick={onOpen}>
           Connect Wallet {isSubmitted ? <CircularProgress size="22px" thickness="4px" isIndeterminate color="#3C2E26" /> : null}
           </button>
+           <WalletsModal isOpen={isOpen} onClose={onClose} selectMetamask={handleMetamask} selectWalletConnect={handleWalletConnect}/>
+           </div>
         )}
         <h2 className="header-name">Spread a little magic</h2>
         </div>
